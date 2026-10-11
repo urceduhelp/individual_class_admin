@@ -112,11 +112,17 @@ td button{width:auto;padding:2px 9px}
         <div><label for="t_title">මාතෘකාව (අවශ්‍ය නම්)</label><input id="t_title" placeholder="උදා: 5 වන පරීක්ෂණය"></div>
       </div>
       <div class="row">
-        <div><label>ESSAY ලකුණු / සම්පූර්ණ</label><div class="row"><input id="e_m" type="number" step="any" placeholder="ලකුණු"><input id="e_x" type="number" step="any" placeholder="/ 48"></div></div>
-        <div><label>MCQ ලකුණු / සම්පූර්ණ</label><div class="row"><input id="m_m" type="number" step="any" placeholder="ලකුණු"><input id="m_x" type="number" step="any" placeholder="/ 40"></div></div>
-        <div><label>MAP ලකුණු / සම්පූර්ණ</label><div class="row"><input id="p_m" type="number" step="any" placeholder="ලකුණු"><input id="p_x" type="number" step="any" placeholder="/ 12"></div></div>
+        <div><label>ESSAY ලකුණු / සම්පූර්ණ (48 කට පරිවර්තනය වේ)</label>
+          <div class="row"><input id="e_m" type="number" step="any" placeholder="ලකුණු"><input id="e_x" type="number" step="any" placeholder="/ 48"></div>
+          <p class="hint" id="e_p"></p></div>
+        <div><label>MCQ ලකුණු / සම්පූර්ණ (40 කට පරිවර්තනය වේ)</label>
+          <div class="row"><input id="m_m" type="number" step="any" placeholder="ලකුණු"><input id="m_x" type="number" step="any" placeholder="/ 40"></div>
+          <p class="hint" id="m_p"></p></div>
+        <div><label>MAP ලකුණු / සම්පූර්ණ (12 කට පරිවර්තනය වේ)</label>
+          <div class="row"><input id="p_m" type="number" step="any" placeholder="ලකුණු"><input id="p_x" type="number" step="any" placeholder="/ 12"></div>
+          <p class="hint" id="p_p"></p></div>
       </div>
-      <p class="hint">ලකුණු නොලැබූ (ඇතුළත් නොකරන) වර්ගය හිස්ව තබන්න. "සම්පූර්ණ" අගයන් මතක තබා ගනී.</p>
+      <p class="hint">ඔබට කැමති සම්පූර්ණ අගයකින් (උදා: MCQ 8 / 10) ඇතුළත් කරන්න. සුරැකෙන්නේ නියමිත අගයට (MCQ 32 / 40) පරිවර්තනය වූ ලකුණයි. "සම්පූර්ණ" හිස්ව තැබුවොත් නියමිත අගයම (ESSAY 48, MCQ 40, MAP 12) ගනී. ලකුණු නොලැබූ වර්ගය හිස්ව තබන්න.</p>
       <div class="btns"><button id="addt">ලකුණු එක් කරන්න</button></div>
       <p class="msg" id="tm"></p>
       <table id="st"></table>
@@ -219,9 +225,27 @@ $("delst").onclick=async()=>{
 };
 
 /* ---------- ලකුණු ---------- */
-let MX={};try{MX=JSON.parse(localStorage.getItem("ic_max")||"{}");}catch(e){}
+const FIX={e:48,m:40,p:12};/* නියමිත සම්පූර්ණ අගයන් (48 + 40 + 12 = 100) */
+let MX={};try{MX=JSON.parse(localStorage.getItem("ic_max2")||"{}");}catch(e){}/* පරණ "ic_max" අගයන් නොගනී */
 $("e_x").value=MX.e||"";$("m_x").value=MX.m||"";$("p_x").value=MX.p||"";
 $("t_date").value=new Date().toISOString().slice(0,10);
+
+const nv=id=>{const v=$(id).value.trim();return v===""?null:Number(v);};
+/* ඇතුළත් කළ ලකුණ → නියමිත අගයට පරිවර්තනය. null = හිස්, NaN = වැරදි */
+function conv(m,x,fix){
+  if(m===null)return null;
+  const mx=x===null?fix:x;
+  if(Number.isNaN(m)||!(mx>0)||m<0||m>mx)return NaN;
+  return r2(m/mx*fix);
+}
+const KS=[["e_m","e_x",FIX.e,"ESSAY","e_p"],["m_m","m_x",FIX.m,"MCQ","m_p"],["p_m","p_x",FIX.p,"MAP","p_p"]];
+function prev(){
+  KS.forEach(([m,x,f,,p])=>{const c=conv(nv(m),nv(x),f);
+    $(p).textContent=c===null?"":Number.isNaN(c)?"⚠ ලකුණ වැරදියි":`→ ${c} / ${f} ලෙස සුරැකේ`;});
+}
+KS.forEach(([m,x])=>{$(m).oninput=prev;$(x).oninput=prev;});
+prev();
+
 async function loadScores(){
   const t=$("st");t.innerHTML="";
   try{
@@ -234,18 +258,21 @@ async function loadScores(){
       try{await rpc("ic_delete_score",{p_id:b.dataset.id});loadScores();}catch(x){say("tm",x.message);}});
   }catch(x){say("tm",x.message);}
 }
-const nv=id=>{const v=$(id).value.trim();return v===""?null:Number(v);};
+
 $("addt").onclick=async()=>{
-  const k=[["e_m","e_x","ESSAY"],["m_m","m_x","MCQ"],["p_m","p_x","MAP"]];
-  if(k.every(([m])=>nv(m)===null)){say("tm","අවම වශයෙන් එක් වර්ගයක ලකුණු ඇතුළත් කරන්න");return;}
-  for(const[m,x,n] of k)if(nv(m)!==null&&(nv(x)===null||nv(x)<=0)){say("tm",`${n} සඳහා සම්පූර්ණ ලකුණු ඇතුළත් කරන්න`);return;}
+  const c=KS.map(([m,x,f])=>conv(nv(m),nv(x),f));
+  if(c.every(v=>v===null)){say("tm","අවම වශයෙන් එක් වර්ගයක ලකුණු ඇතුළත් කරන්න");return;}
+  const bad=c.findIndex(v=>Number.isNaN(v));
+  if(bad>=0){say("tm",`${KS[bad][3]}: ලකුණු වැරදියි (සම්පූර්ණ අගයට වඩා වැඩි හෝ ඍණ විය නොහැක)`);return;}
   const no=nv("t_no"),title=$("t_title").value.trim()||(no?`${no} වන පරීක්ෂණය`:"");
   try{
     await rpc("ic_add_test",{p_student:cur.id,p_title:title,p_date:$("t_date").value||null,p_no:no,
-      p_essay:nv("e_m"),p_essay_max:nv("e_x"),p_mcq:nv("m_m"),p_mcq_max:nv("m_x"),p_map:nv("p_m"),p_map_max:nv("p_x")});
-    MX={e:$("e_x").value,m:$("m_x").value,p:$("p_x").value};try{localStorage.setItem("ic_max",JSON.stringify(MX));}catch(e){}
+      p_essay:c[0],p_essay_max:c[0]===null?null:FIX.e,
+      p_mcq:c[1],p_mcq_max:c[1]===null?null:FIX.m,
+      p_map:c[2],p_map_max:c[2]===null?null:FIX.p});
+    MX={e:$("e_x").value,m:$("m_x").value,p:$("p_x").value};try{localStorage.setItem("ic_max2",JSON.stringify(MX));}catch(e){}
     ["e_m","m_m","p_m","t_title"].forEach(i=>$(i).value="");if(no)$("t_no").value=no+1;
-    say("tm","ලකුණු එක් කළා ✓",true);loadScores();
+    prev();say("tm","ලකුණු එක් කළා ✓",true);loadScores();
   }catch(x){say("tm",x.message);}
 };
 </script>

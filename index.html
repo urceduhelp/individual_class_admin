@@ -112,17 +112,17 @@ td button{width:auto;padding:2px 9px}
         <div><label for="t_title">මාතෘකාව (අවශ්‍ය නම්)</label><input id="t_title" placeholder="උදා: 5 වන පරීක්ෂණය"></div>
       </div>
       <div class="row">
-        <div><label>ESSAY ලකුණු / සම්පූර්ණ (48 කට පරිවර්තනය වේ)</label>
-          <div class="row"><input id="e_m" type="number" step="any" placeholder="ලකුණු"><input id="e_x" type="number" step="any" placeholder="/ 48"></div>
+        <div><label for="e_m">ESSAY ලකුණු (48 කට පරිවර්තනය වේ)</label>
+          <input id="e_m" type="text" inputmode="decimal" autocomplete="off" placeholder="උදා: 12/16 හෝ 36">
           <p class="hint" id="e_p"></p></div>
-        <div><label>MCQ ලකුණු / සම්පූර්ණ (40 කට පරිවර්තනය වේ)</label>
-          <div class="row"><input id="m_m" type="number" step="any" placeholder="ලකුණු"><input id="m_x" type="number" step="any" placeholder="/ 40"></div>
+        <div><label for="m_m">MCQ ලකුණු (40 කට පරිවර්තනය වේ)</label>
+          <input id="m_m" type="text" inputmode="decimal" autocomplete="off" placeholder="උදා: 8/10 හෝ 32">
           <p class="hint" id="m_p"></p></div>
-        <div><label>MAP ලකුණු / සම්පූර්ණ (12 කට පරිවර්තනය වේ)</label>
-          <div class="row"><input id="p_m" type="number" step="any" placeholder="ලකුණු"><input id="p_x" type="number" step="any" placeholder="/ 12"></div>
+        <div><label for="p_m">MAP ලකුණු (12 කට පරිවර්තනය වේ)</label>
+          <input id="p_m" type="text" inputmode="decimal" autocomplete="off" placeholder="උදා: 5/6 හෝ 10">
           <p class="hint" id="p_p"></p></div>
       </div>
-      <p class="hint">ඔබට කැමති සම්පූර්ණ අගයකින් (උදා: MCQ 8 / 10) ඇතුළත් කරන්න. සුරැකෙන්නේ නියමිත අගයට (MCQ 32 / 40) පරිවර්තනය වූ ලකුණයි. "සම්පූර්ණ" හිස්ව තැබුවොත් නියමිත අගයම (ESSAY 48, MCQ 40, MAP 12) ගනී. ලකුණු නොලැබූ වර්ගය හිස්ව තබන්න.</p>
+      <p class="hint">ලකුණ සහ සම්පූර්ණ අගය "/" සමඟ ඇතුළත් කරන්න (උදා: MCQ 8/10). එය නියමිත අගයට (MCQ 32/40) පරිවර්තනය වී සුරැකේ. "/" නොමැතිව ලකුණ පමණක් ඇතුළත් කළොත් එය කෙලින්ම නියමිත අගය (ESSAY 48, MCQ 40, MAP 12) යටතේ සුරැකේ. ලකුණු නොලැබූ වර්ගය හිස්ව තබන්න.</p>
       <div class="btns"><button id="addt">ලකුණු එක් කරන්න</button></div>
       <p class="msg" id="tm"></p>
       <table id="st"></table>
@@ -226,24 +226,24 @@ $("delst").onclick=async()=>{
 
 /* ---------- ලකුණු ---------- */
 const FIX={e:48,m:40,p:12};/* නියමිත සම්පූර්ණ අගයන් (48 + 40 + 12 = 100) */
-let MX={};try{MX=JSON.parse(localStorage.getItem("ic_max2")||"{}");}catch(e){}/* පරණ "ic_max" අගයන් නොගනී */
-$("e_x").value=MX.e||"";$("m_x").value=MX.m||"";$("p_x").value=MX.p||"";
 $("t_date").value=new Date().toISOString().slice(0,10);
-
 const nv=id=>{const v=$(id).value.trim();return v===""?null:Number(v);};
-/* ඇතුළත් කළ ලකුණ → නියමිත අගයට පරිවර්තනය. null = හිස්, NaN = වැරදි */
-function conv(m,x,fix){
-  if(m===null)return null;
-  const mx=x===null?fix:x;
-  if(Number.isNaN(m)||!(mx>0)||m<0||m>mx)return NaN;
-  return r2(m/mx*fix);
+/* "8/10" හෝ "8" කියවයි. null = හිස්, NaN = වැරදි, එසේ නැත්නම් නියමිත අගයට පරිවර්තිත ලකුණ */
+function conv(txt,fix){
+  const t=String(txt||"").trim().replace(/\s+/g,"").replace(/[\u2044\u2215\uFF0F\\]/g,"/");
+  if(t==="")return null;
+  const m=t.match(/^(\d+(?:\.\d+)?)(?:\/(\d+(?:\.\d+)?))?$/);
+  if(!m)return NaN;
+  const got=Number(m[1]),mx=m[2]===undefined?fix:Number(m[2]);
+  if(!(mx>0)||got>mx)return NaN;
+  return r2(got/mx*fix);
 }
-const KS=[["e_m","e_x",FIX.e,"ESSAY","e_p"],["m_m","m_x",FIX.m,"MCQ","m_p"],["p_m","p_x",FIX.p,"MAP","p_p"]];
+const KS=[["e_m",FIX.e,"ESSAY","e_p"],["m_m",FIX.m,"MCQ","m_p"],["p_m",FIX.p,"MAP","p_p"]];
 function prev(){
-  KS.forEach(([m,x,f,,p])=>{const c=conv(nv(m),nv(x),f);
-    $(p).textContent=c===null?"":Number.isNaN(c)?"⚠ ලකුණ වැරදියි":`→ ${c} / ${f} ලෙස සුරැකේ`;});
+  KS.forEach(([m,f,,p])=>{const c=conv($(m).value,f);
+    $(p).textContent=c===null?"":Number.isNaN(c)?"⚠ ලකුණ වැරදියි (උදා: 8/10)":`→ ${c} / ${f} ලෙස සුරැකේ`;});
 }
-KS.forEach(([m,x])=>{$(m).oninput=prev;$(x).oninput=prev;});
+KS.forEach(([m])=>{$(m).oninput=prev;});
 prev();
 
 async function loadScores(){
@@ -260,17 +260,16 @@ async function loadScores(){
 }
 
 $("addt").onclick=async()=>{
-  const c=KS.map(([m,x,f])=>conv(nv(m),nv(x),f));
+  const c=KS.map(([m,f])=>conv($(m).value,f));
   if(c.every(v=>v===null)){say("tm","අවම වශයෙන් එක් වර්ගයක ලකුණු ඇතුළත් කරන්න");return;}
   const bad=c.findIndex(v=>Number.isNaN(v));
-  if(bad>=0){say("tm",`${KS[bad][3]}: ලකුණු වැරදියි (සම්පූර්ණ අගයට වඩා වැඩි හෝ ඍණ විය නොහැක)`);return;}
+  if(bad>=0){say("tm",`${KS[bad][2]}: ලකුණු වැරදියි (උදා: 8/10 – ලකුණ සම්පූර්ණ අගයට වඩා වැඩි විය නොහැක)`);return;}
   const no=nv("t_no"),title=$("t_title").value.trim()||(no?`${no} වන පරීක්ෂණය`:"");
   try{
     await rpc("ic_add_test",{p_student:cur.id,p_title:title,p_date:$("t_date").value||null,p_no:no,
       p_essay:c[0],p_essay_max:c[0]===null?null:FIX.e,
       p_mcq:c[1],p_mcq_max:c[1]===null?null:FIX.m,
       p_map:c[2],p_map_max:c[2]===null?null:FIX.p});
-    MX={e:$("e_x").value,m:$("m_x").value,p:$("p_x").value};try{localStorage.setItem("ic_max2",JSON.stringify(MX));}catch(e){}
     ["e_m","m_m","p_m","t_title"].forEach(i=>$(i).value="");if(no)$("t_no").value=no+1;
     prev();say("tm","ලකුණු එක් කළා ✓",true);loadScores();
   }catch(x){say("tm",x.message);}

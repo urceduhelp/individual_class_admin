@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Individual class – Data Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef3f7;--ink:#14283a;--mut:#5b6b78;--card:#fff;--soft:#f4f8fb;--line:#d3dde4;--acc:#0077b6;--red:#c62828;--ok:#2e7d32;--warn:#b4531a}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1a24;--ink:#e6eef3;--mut:#93a5b3;--card:#16283a;--soft:#1b3145;--line:#2a3f4e;--acc:#4cb8e6;--red:#ef7a7a;--ok:#7fd48a;--warn:#f0a070}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Noto Sans Sinhala",system-ui,sans-serif}
+header{background:#0d2b45;color:#fff;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:1.15rem;margin:0;margin-right:auto}
+header button{width:auto;margin:0;padding:5px 12px;background:transparent;border:1px solid #9fd8f7;color:#fff}
+main{max-width:1100px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+h2{font-size:1rem;margin:0 0 8px}
+label{display:block;font-size:.85rem;color:var(--mut);margin-top:8px}
+input,select,textarea,button{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);width:100%;background:transparent;color:inherit}
+textarea{min-height:92px;resize:vertical}
+button{background:var(--acc);color:#fff;border:0;font-weight:600;cursor:pointer}
+button.alt{background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:400}
+button.del{background:var(--red)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1 1 140px;min-width:0}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.btns button{width:auto;padding:8px 16px}
+.msg{min-height:1.4em;font-size:.9rem;margin-top:8px}.msg.ok{color:var(--ok)}.msg.bad{color:var(--warn)}
+#login{max-width:380px;margin:10vh auto 0}
+#app{display:none}
+.layout{display:grid;grid-template-columns:260px 1fr;gap:12px;align-items:start}
+@media(max-width:800px){.layout{grid-template-columns:1fr}}
+#sl{max-height:46vh;overflow:auto;margin-top:8px}
+#sl button{display:block;text-align:left;width:100%;margin:0 0 4px;background:transparent;color:var(--ink);border:1px solid var(--line);font-weight:400;padding:6px 10px}
+#sl button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+#sl small{color:inherit;opacity:.7;float:right}
+.fee{background:var(--soft);border-radius:8px;padding:8px;margin-top:10px}
+.fee .row>*{flex:1 1 120px}
+.fee .row button{flex:0 0 auto;width:auto}
+table{width:100%;border-collapse:collapse;margin-top:8px}
+td,th{padding:5px 4px;border-bottom:1px solid var(--line);text-align:left;font-size:.9rem}
+td button{width:auto;padding:2px 9px}
+.k{display:inline-block;min-width:54px;font-weight:700}
+.hint{font-size:.82rem;color:var(--mut);margin:4px 0 0}
+</style>
+</head>
+<body>
+<header><h1>Individual class · Data Feed</h1><span id="who" class="hint" style="color:#9fd8f7"></span><button id="out" style="display:none">Logout</button></header>
+<main>
+<section id="login" class="card">
+  <h2>Admin පිවිසුම</h2>
+  <p class="hint">Supabase Authentication හි admin ඊමේල් සහ මුරපදය.</p>
+  <form id="lf">
+    <input id="em" type="email" placeholder="ඊමේල්" autocomplete="username" required>
+    <input id="pw" type="password" placeholder="මුරපදය" autocomplete="current-password" required style="margin-top:8px">
+    <p class="msg bad" id="le"></p>
+    <button id="lg" style="margin-top:6px">පිවිසෙන්න</button>
+  </form>
+</section>
+
+<div id="app" class="layout">
+  <aside class="card">
+    <button id="newb">➕ අලුත් සිසුවා</button>
+    <input id="q" placeholder="සොයන්න..." style="margin-top:8px">
+    <div id="sl"></div>
+  </aside>
+
+  <div>
+    <section class="card">
+      <h2 id="ft">අලුත් සිසුවා</h2>
+      <div class="row">
+        <div><label for="f_name">නම (පිවිසුමේදී භාවිතා වන නම)</label><input id="f_name"></div>
+        <div><label for="f_pw">මුරපදය</label><input id="f_pw" autocomplete="off"></div>
+      </div>
+      <div class="row">
+        <div><label for="f_class">පන්තිය</label><input id="f_class" value="Individual class"></div>
+        <div><label for="f_year">විභාග වර්ෂය</label><input id="f_year" type="number" placeholder="2026"></div>
+        <div><label for="f_type">විභාග වර්ගය</label>
+          <select id="f_type"><option value="">—</option><option>ORDINARY LEVEL</option><option>ADVANCED LEVEL</option></select></div>
+      </div>
+      <div class="row">
+        <div><label for="f_school">පාසල</label><input id="f_school"></div>
+        <div><label for="f_addr">ලිපිනය (report එකේ නොපෙන්වයි)</label><input id="f_addr"></div>
+      </div>
+      <div class="row">
+        <div><label for="f_done">දැනට නිම කළ කොටස් (පේළියකට එකක්)</label><textarea id="f_done"></textarea></div>
+        <div><label for="f_next">ඉදිරි මාතෘකා (පේළියකට එකක්)</label><textarea id="f_next"></textarea></div>
+      </div>
+      <div class="fee">
+        <b>ගාස්තු</b>
+        <div class="row">
+          <div><label for="f_fee">පැයක් සඳහා අය කිරීම (Rs.)</label><input id="f_fee" type="number" step="0.01" min="0"></div>
+          <div><label for="f_bal">දැනට ගෙවීමට ඇති මුදල (Rs.)</label><input id="f_bal" type="number" step="0.01"></div>
+        </div>
+        <div class="row" style="align-items:end">
+          <div><label for="h_n">පැය ගණන</label><input id="h_n" type="number" step="0.25" min="0" placeholder="උදා: 2"></div>
+          <button class="alt" id="h_add" title="පැය ගණන × පැයක ගාස්තුව ශේෂයට එකතු කරයි">＋ පැය එකතු කරන්න</button>
+          <div><label for="p_n">ලැබුණු ගෙවීම (Rs.)</label><input id="p_n" type="number" step="0.01" min="0"></div>
+          <button class="alt" id="p_sub" title="ලැබුණු මුදල ශේෂයෙන් අඩු කරයි">− ගෙවීම අඩු කරන්න</button>
+        </div>
+        <p class="hint">මේවා ශේෂය ෆෝම් එකේ පමණක් වෙනස් කරයි; "සුරකින්න" ඔබන තෙක් Database එකට යන්නේ නැත.</p>
+      </div>
+      <div class="btns"><button id="save">සුරකින්න</button><button class="del" id="delst" style="display:none">සිසුවා මකන්න</button></div>
+      <p class="msg" id="fm"></p>
+    </section>
+
+    <section class="card" id="tests" style="display:none">
+      <h2>පරීක්ෂණයක ලකුණු ඇතුළත් කරන්න</h2>
+      <div class="row">
+        <div><label for="t_date">දිනය</label><input id="t_date" type="date"></div>
+        <div><label for="t_no">පරීක්ෂණ අංකය</label><input id="t_no" type="number" min="1"></div>
+        <div><label for="t_title">මාතෘකාව (අවශ්‍ය නම්)</label><input id="t_title" placeholder="උදා: 5 වන පරීක්ෂණය"></div>
+      </div>
+      <div class="row">
+        <div><label>ESSAY ලකුණු / සම්පූර්ණ</label><div class="row"><input id="e_m" type="number" step="any" placeholder="ලකුණු"><input id="e_x" type="number" step="any" placeholder="/ 40"></div></div>
+        <div><label>MCQ ලකුණු / සම්පූර්ණ</label><div class="row"><input id="m_m" type="number" step="any" placeholder="ලකුණු"><input id="m_x" type="number" step="any" placeholder="/ 60"></div></div>
+        <div><label>MAP ලකුණු / සම්පූර්ණ</label><div class="row"><input id="p_m" type="number" step="any" placeholder="ලකුණු"><input id="p_x" type="number" step="any" placeholder="/ 12"></div></div>
+      </div>
+      <p class="hint">ලකුණු නොලැබූ (ඇතුළත් නොකරන) වර්ගය හිස්ව තබන්න. "සම්පූර්ණ" අගයන් මතක තබා ගනී.</p>
+      <div class="btns"><button id="addt">ලකුණු එක් කරන්න</button></div>
+      <p class="msg" id="tm"></p>
+      <table id="st"></table>
+    </section>
+  </div>
+</div>
+</main>
+<script>
+const SUPABASE_URL="https://jcijglwpkfluyzrltimk.supabase.co/", SUPABASE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjaWpnbHdwa2ZsdXl6cmx0aW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MzU3OTUsImV4cCI6MjA4MjQxMTc5NX0.dvT8OiyVEiYn_DhkMakmSq1Vvr4REDr0kYPnyqCtWHs";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const KN={written:"ESSAY",mcq:"MCQ",map:"MAP"};
+let TOK="",RTOK="",EXP=0,students=[],cur=null;/* cur = තෝරාගත් සිසුවා (null: අලුත්) */
+
+/* ---------- Supabase Auth (ඊමේල් + මුරපදය) ---------- */
+async function auth(grant,body){
+  const r=await fetch(`${SUPABASE_URL}auth/v1/token?grant_type=${grant}`,{method:"POST",
+    headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){const m=d.msg||d.error_description||d.message||"";
+    throw new Error(d.error_code==="invalid_credentials"||/invalid/i.test(m)?"ඊමේල් හෝ මුරපදය වැරදියි":(m||"පිවිසීමට නොහැක"));}
+  TOK=d.access_token;RTOK=d.refresh_token;EXP=Date.now()+(d.expires_in||3600)*1000;
+  try{sessionStorage.setItem("ic_auth",JSON.stringify({t:TOK,r:RTOK,e:EXP}));}catch(e){}
+}
+async function rpc(fn,body){
+  if(RTOK&&Date.now()>EXP-60000)await auth("refresh_token",{refresh_token:RTOK});
+  const r=await fetch(`${SUPABASE_URL}rest/v1/rpc/${fn}`,{method:"POST",
+    headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+TOK,"Content-Type":"application/json"},body:JSON.stringify(body||{})});
+  if(!r.ok){let m="";try{m=(await r.json()).message||""}catch(e){}
+    throw new Error(/function .* not found|Could not find the function/i.test(m)?"SQL (individual-class-setup.sql) තවම Supabase හි run කර නැත":m||"සම්බන්ධ විය නොහැක");}
+  const d=await r.json();if(d===null)throw Object.assign(new Error("මෙම ගිණුමට admin අවසරය නැත (ic_admins වගුවේ ඊමේල් එක නැත)"),{auth:true});return d;
+}
+function say(id,t,ok){const e=$(id);e.textContent=t||"";e.className="msg "+(t?(ok?"ok":"bad"):"");}
+function showApp(){$("login").style.display="none";$("app").style.display="grid";$("out").style.display="";drawList();pick(null);}
+function signOut(){/* පිටුව නැවත load නොකර පිවිසුමට යයි */
+  TOK=RTOK="";EXP=0;students=[];cur=null;try{sessionStorage.removeItem("ic_auth");}catch(e){}
+  $("pw").value="";$("le").textContent="";$("app").style.display="none";$("out").style.display="none";$("login").style.display="";$("pw").focus();}
+$("lf").onsubmit=async e=>{
+  e.preventDefault();$("le").textContent="";const em=$("em").value.trim();
+  try{
+    await auth("password",{email:em,password:$("pw").value});
+    students=await rpc("ic_students",{});
+    try{localStorage.setItem("ic_email",em);}catch(_){}
+    $("pw").value="";showApp();
+  }catch(x){TOK=RTOK="";try{sessionStorage.removeItem("ic_auth");}catch(_){}$("le").textContent=x.message;}
+};
+$("out").onclick=signOut;
+try{$("em").value=localStorage.getItem("ic_email")||"";}catch(e){}
+(async()=>{/* එකම tab එකේ නැවත පිවිසීම (sessionStorage) */
+  try{const s=JSON.parse(sessionStorage.getItem("ic_auth")||"null");if(!s)return;TOK=s.t;RTOK=s.r;EXP=s.e;students=await rpc("ic_students",{});showApp();}
+  catch(x){TOK=RTOK="";try{sessionStorage.removeItem("ic_auth");}catch(_){}}
+})();
+
+/* ---------- සිසුන්ගේ ලැයිස්තුව ---------- */
+function drawList(){
+  const q=$("q").value.trim().toLowerCase(),box=$("sl");box.innerHTML="";
+  students.filter(s=>!q||s.name.toLowerCase().includes(q)).forEach(s=>{
+    const b=document.createElement("button");b.className=cur&&cur.id===s.id?"on":"";
+    b.innerHTML=`${esc(s.name)}<small>${s.balance_due>0?"Rs. "+Number(s.balance_due).toLocaleString():""}</small>`;
+    b.onclick=()=>pick(s);box.appendChild(b);});
+  if(!box.children.length)box.innerHTML='<p class="hint">සිසුන් නැත.</p>';
+}
+$("q").oninput=drawList;$("newb").onclick=()=>pick(null);
+
+function pick(s){
+  cur=s;const v=s||{};
+  $("ft").textContent=s?"සිසුවා සංස්කරණය: "+s.name:"අලුත් සිසුවා";
+  $("f_name").value=v.name||"";$("f_pw").value=v.password||"";$("f_class").value=v.class_name||"Individual class";
+  $("f_year").value=v.exam_year||"";$("f_type").value=v.exam_type||"";
+  $("f_school").value=v.school||"";$("f_addr").value=v.address||"";
+  $("f_done").value=v.completed||"";$("f_next").value=v.upcoming||"";
+  $("f_fee").value=v.hourly_fee??"";$("f_bal").value=v.balance_due??"";
+  $("h_n").value=$("p_n").value="";say("fm","");say("tm","");
+  $("delst").style.display=s?"":"none";$("tests").style.display=s?"":"none";
+  drawList();if(s)loadScores();
+}
+
+/* ---------- ගාස්තු උදව් ---------- */
+const num=id=>Number($(id).value)||0,r2=n=>Math.round(n*100)/100;
+$("h_add").onclick=()=>{if(!num("h_n"))return;$("f_bal").value=r2(num("f_bal")+num("h_n")*num("f_fee"));$("h_n").value="";say("fm","ශේෂය වෙනස් කළා – 'සුරකින්න' ඔබන්න",true);};
+$("p_sub").onclick=()=>{if(!num("p_n"))return;$("f_bal").value=r2(num("f_bal")-num("p_n"));$("p_n").value="";say("fm","ශේෂය වෙනස් කළා – 'සුරකින්න' ඔබන්න",true);};
+
+/* ---------- සුරකින්න / මකන්න ---------- */
+$("save").onclick=async()=>{
+  const name=$("f_name").value.trim(),pw=$("f_pw").value;
+  if(!name||!pw){say("fm","නම සහ මුරපදය අනිවාර්යයි");return;}
+  const p={id:cur?cur.id:null,name,password:pw,class_name:$("f_class").value.trim(),exam_year:$("f_year").value,exam_type:$("f_type").value,
+    school:$("f_school").value.trim(),address:$("f_addr").value.trim(),completed:$("f_done").value,upcoming:$("f_next").value,
+    hourly_fee:$("f_fee").value,balance_due:$("f_bal").value};
+  try{
+    const r=await rpc("ic_save_student",{p});
+    students=await rpc("ic_students",{});
+    pick(students.find(s=>s.id===r.id)||null);say("fm","සුරැකුවා ✓",true);
+  }catch(x){say("fm",/duplicate|unique/i.test(x.message)?"මෙම නමින් සිසුවෙක් දැනටමත් සිටී":x.message);}
+};
+$("delst").onclick=async()=>{
+  if(!cur||!confirm(`"${cur.name}" සහ ඔහුගේ සියලු ලකුණු මකන්නද?`))return;
+  try{await rpc("ic_delete_student",{p_id:cur.id});students=await rpc("ic_students",{});pick(null);}
+  catch(x){say("fm",x.message);}
+};
+
+/* ---------- ලකුණු ---------- */
+let MX={};try{MX=JSON.parse(localStorage.getItem("ic_max")||"{}");}catch(e){}
+$("e_x").value=MX.e||"";$("m_x").value=MX.m||"";$("p_x").value=MX.p||"";
+$("t_date").value=new Date().toISOString().slice(0,10);
+async function loadScores(){
+  const t=$("st");t.innerHTML="";
+  try{
+    const a=await rpc("ic_scores",{p_student:cur.id});
+    t.innerHTML=a.length?a.map(c=>`<tr><td>${esc(c.test_date||(c.created_at||"").slice(0,10))}</td><td>${c.test_no?"#"+c.test_no:""} ${esc(c.title)}</td>
+      <td><span class="k">${KN[c.kind]||esc(c.kind)}</span>${Number(c.marks)} / ${Number(c.max_marks??c.max)}</td><td><button class="del" data-id="${c.id}" title="මකන්න">×</button></td></tr>`).join("")
+      :'<tr><td class="hint">තවම ලකුණු නැත.</td></tr>';
+    t.querySelectorAll("button[data-id]").forEach(b=>b.onclick=async()=>{
+      if(!confirm("මෙම ලකුණ මකන්නද?"))return;
+      try{await rpc("ic_delete_score",{p_id:b.dataset.id});loadScores();}catch(x){say("tm",x.message);}});
+  }catch(x){say("tm",x.message);}
+}
+const nv=id=>{const v=$(id).value.trim();return v===""?null:Number(v);};
+$("addt").onclick=async()=>{
+  const k=[["e_m","e_x","ESSAY"],["m_m","m_x","MCQ"],["p_m","p_x","MAP"]];
+  if(k.every(([m])=>nv(m)===null)){say("tm","අවම වශයෙන් එක් වර්ගයක ලකුණු ඇතුළත් කරන්න");return;}
+  for(const[m,x,n] of k)if(nv(m)!==null&&(nv(x)===null||nv(x)<=0)){say("tm",`${n} සඳහා සම්පූර්ණ ලකුණු ඇතුළත් කරන්න`);return;}
+  const no=nv("t_no"),title=$("t_title").value.trim()||(no?`${no} වන පරීක්ෂණය`:"");
+  try{
+    await rpc("ic_add_test",{p_student:cur.id,p_title:title,p_date:$("t_date").value||null,p_no:no,
+      p_essay:nv("e_m"),p_essay_max:nv("e_x"),p_mcq:nv("m_m"),p_mcq_max:nv("m_x"),p_map:nv("p_m"),p_map_max:nv("p_x")});
+    MX={e:$("e_x").value,m:$("m_x").value,p:$("p_x").value};try{localStorage.setItem("ic_max",JSON.stringify(MX));}catch(e){}
+    ["e_m","m_m","p_m","t_title"].forEach(i=>$(i).value="");if(no)$("t_no").value=no+1;
+    say("tm","ලකුණු එක් කළා ✓",true);loadScores();
+  }catch(x){say("tm",x.message);}
+};
+</script>
+</body>
+</html>
